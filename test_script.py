@@ -90,9 +90,7 @@ class Board:
         self.ships.append(ship)
         self.contour(ship)
 
-        ...
-
-    def contour(self, ship, verb = False):
+    def contour(self, ship, verb=False):
         """
         Метод для вычисления и отрисовки контура корабля
         """
@@ -119,7 +117,9 @@ class Board:
 
 
 a = Board()
-b = Ship(Dot(1, 2), 3, 0)
+b = Ship(Dot(1, 2), 3, 1)
+#c = Ship(Dot(0, 0), 3, 1)
 
 print(a.add_ship(b))
+#print(a.add_ship(c ))
 print(a)
