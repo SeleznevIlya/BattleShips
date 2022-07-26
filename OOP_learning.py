@@ -32,6 +32,10 @@ class BoardOutException:
     def __str__(self):
         print('Вы выбрали клетку за пределом поля!')
 
+class ShipPositionError():
+    def __str__(self):
+        print('Некорректное положение корабля')
+
 
 
 class Dot(object):
@@ -70,15 +74,29 @@ class Board:
             field_vision = field_vision.replace('■', 'O')
         return field_vision
 
-    def add_ship(self):
-        pass
+    def add_ship(self, ship):
+        for d in ship.dots:
+            if self.out(d) or d in self.used_points:
+                raise ShipPositionError()
 
-    def contour(self):
-        pass
-
-    """@property
-    def board_output(self):
-        return self.game_field"""
+    def contour(self, ship, verb=False):
+        """
+        Метод для вычисления и отрисовки контура корабля
+        """
+        near = [
+            (-1, -1), (1, 0), (-1, 1),
+            (0, -1), (0, 0), (0, 1),
+            (1, -1), (-1, 0), (1, 1),
+        ]
+        for d in ship.dots:  # цикл по точкам корабля
+            for dx, dy in near:  # цикл по сдвигам в списке near
+                cur = Dot(d.x + dx, d.y + dy)  # получаем точки вокруг корабля
+                # self.game_field[cur.x][cur.y] = '+'
+                if not (
+                self.out(cur)) and not cur in self.used_points:  # если в пределах поля и не в списке занятых точек
+                    if verb:
+                        self.game_field[cur.x][cur.y] = '.'  # точка около корабля становится '.'
+                    self.used_points.append(cur)
 
     def out(self, away):
         """условие что точка выходит за пределы доски"""

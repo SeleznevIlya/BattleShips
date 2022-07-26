@@ -1,6 +1,15 @@
-'''class Dot(object):
+class BoardOutException:
+    def __str__(self):
+        print('Вы выбрали клетку за пределом поля!')
 
-    def __init__(self,x , y):
+
+class ShipPositionError():
+    def __str__(self):
+        print('Некорректное положение корабля')
+
+class Dot(object):
+
+    def __init__(self, x, y):
         self.x = x
         self.y = y
 
@@ -39,15 +48,10 @@ class Ship:
         return shot in self.dots
 
 
-ship = Ship(Dot(1, 2), 3, 0)
-
-print(ship.dots)
-
-print(ship.shooten(Dot(1, 2)))
-'''
-
 class Board:
-
+    """
+    Метод для создания доски
+    """
     def __init__(self, size = 6, hide = False):
         self.size = size
         self.hide = hide
@@ -59,25 +63,52 @@ class Board:
         self.used_points = []
         self.ships = []
 
+    '''
+    Метод печати игровой доски в консоль
+    '''
     def __str__(self):
         field_vision = ""
         field_vision += "  | 1 | 2 | 3 | 4 | 5 | 6 |"
         for i, row in enumerate(self.game_field):
             field_vision += f"\n{i + 1} | " + " | ".join(row) + " |"
 
-        if self.hide:
+        if self.hide: #если hide == True, скрывает все корабли
             field_vision = field_vision.replace('■', 'O')
         return field_vision
 
-    def add_ship(self):
-        pass
+    """
+    Метод добавления кораблей на игровую доску
+    """
+    def add_ship(self, ship):
+        for d in ship.dots:
+            if self.out(d) or d in self.used_points:
+                raise ShipPositionError()
+        for d in ship.dots:
+            self.game_field[d.x][d.y] = '■'
+            self.used_points.append(d)
 
-    def contour(self):
-        pass
+        self.ships.append(ship)
+        self.contour(ship)
 
-    """@property
-    def board_output(self):
-        return self.game_field"""
+        ...
+
+    def contour(self, ship, verb = False):
+        """
+        Метод для вычисления и отрисовки контура корабля
+        """
+        near = [
+            (-1, -1), (1, 0), (-1, 1),
+            (0, -1), (0, 0), (0, 1),
+            (1, -1), (-1, 0), (1, 1),
+        ]
+        for d in ship.dots:#цикл по точкам корабля
+            for dx, dy in near:#цикл по сдвигам в списке near
+                cur = Dot(d.x + dx, d.y + dy)#получаем точки вокруг корабля
+                #self.game_field[cur.x][cur.y] = '+'
+                if not(self.out(cur)) and not cur in self.used_points:#если в пределах поля и не в списке занятых точек
+                    if verb:
+                        self.game_field[cur.x][cur.y] = '.'#точка около корабля становится '.'
+                    self.used_points.append(cur)
 
     def out(self, away):
         """условие что точка выходит за пределы доски"""
@@ -88,4 +119,7 @@ class Board:
 
 
 a = Board()
+b = Ship(Dot(1, 2), 3, 0)
+
+print(a.add_ship(b))
 print(a)
