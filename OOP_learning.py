@@ -36,6 +36,11 @@ class ShipPositionException:
         print('Некорректное положение корабля')
 
 
+class BoardUsedPointsException:
+    def __str__(self):
+        print('Невозможно выстрелить в эту точку')
+
+
 class Dot:
 
     def __init__(self,x , y):
