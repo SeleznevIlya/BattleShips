@@ -118,8 +118,34 @@ class Board:
         """условие что точка выходит за пределы доски"""
         return not((0 <= away.x <= self.size) and (0 <= away.y <= self.size))
 
-    def shot(self):
-        pass
+    def shot(self, d):
+        if self.out(d):
+            raise BoardOutException()
+
+        '''if d in self.used_points:
+            raise BoardUsedPointsException()'''
+
+        self.used_points.append(d)
+
+        for ship in self.ships:
+            if d in ship.dots:
+                ship.lives -= 1
+                self.game_field[d.x][d.y] = 'X'
+                if ship.lives == 0:
+                    self.count_destroy_ships += 1
+                    self.contour(ship, verb=True)
+                    print('Корабль убит')
+                    return False
+                else:
+                    print('Корабль ранен')
+                    return True
+
+        self.game_field[d.x][d.y] = '.'
+        print('Промахнулся')
+        return False
+
+    def begin(self):
+        self.used_points = []
 
 
 class Player:
