@@ -1,59 +1,3 @@
-class BoardOutException:
-    def __str__(self):
-        print('Вы выбрали клетку за пределом поля!')
-
-
-class ShipPositionError():
-    def __str__(self):
-        print('Некорректное положение корабля')
-
-
-class BoardUsedPointsException:
-    def __str__(self):
-        print('Невозможно выстрелить в эту точку')
-
-
-class Dot(object):
-
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-    def __eq__(self, other):
-        return self.x == other.x and self.y == other.y
-
-    def __repr__(self):
-        return f'Dot({self.x}, {self.y})'
-
-
-class Ship:
-    def __init__(self, front_point, length_ship, rotation):
-        self.front_point = front_point
-        self.length_ship = length_ship
-        self.rotation = rotation
-        self.lives = length_ship
-
-    @property
-    def dots(self):
-        ship_dots = []
-        for i in range(self.length_ship):
-            cur_x = self.front_point.x
-            cur_y = self.front_point.y
-
-            if self.rotation == 0:
-                cur_x += i
-
-            elif self.rotation == 1:
-                cur_y += i
-
-            ship_dots.append(Dot(cur_x, cur_y))
-
-        return ship_dots
-
-    def shooten(self, shot):
-        return shot in self.dots
-
-
 class Board:
     """
     Метод для создания доски
@@ -65,6 +9,9 @@ class Board:
         self.count_destroy_ships = 0
 
         self.game_field = [['0']*size for _ in range(size)]
+        for i in self.game_field:
+            i[-1] = ' '
+        #self.game_field = [['0'] * size if (size <= 6) else [' '] for _ in range(size)]
 
         self.used_points = []
         self.ships = []
@@ -76,15 +23,13 @@ class Board:
         field_vision = ""
         field_vision += "  | 1 | 2 | 3 | 4 | 5 | 6 |"
         for i, row in enumerate(self.game_field[:-1]):
+
             field_vision += f"\n{i + 1} | " + " | ".join(row) + " |"
 
         if self.hide: #если hide == True, скрывает все корабли
             field_vision = field_vision.replace('■', 'O')
         return field_vision
 
-    """
-    Метод добавления кораблей на игровую доску
-    """
     def add_ship(self, ship):
         for d in ship.dots:
             if self.out(d) or d in self.used_points:
@@ -149,6 +94,63 @@ class Board:
     def begin(self):
         self.used_points = []
 
+a = Board()
+print(a)
+
+class Dot(object):
+
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+    def __repr__(self):
+        return f'Dot({self.x}, {self.y})'
+
+
+class Ship:
+    def __init__(self, front_point, length_ship, rotation):
+        self.front_point = front_point
+        self.length_ship = length_ship
+        self.rotation = rotation
+        self.lives = length_ship
+
+    @property
+    def dots(self):
+        ship_dots = []
+        for i in range(self.length_ship):
+            cur_x = self.front_point.x
+            cur_y = self.front_point.y
+
+            if self.rotation == 0:
+                cur_x += i
+
+            elif self.rotation == 1:
+                cur_y += i
+
+            ship_dots.append(Dot(cur_x, cur_y))
+
+        return ship_dots
+
+    def shooten(self, shot):
+        return shot in self.dots
+
+class BoardOutException:
+    def __str__(self):
+        print('Вы выбрали клетку за пределом поля!')
+
+
+class ShipPositionError():
+    def __str__(self):
+        print('Некорректное положение корабля')
+
+
+class BoardUsedPointsException:
+    def __str__(self):
+        print('Невозможно выстрелить в эту точку')
+
 
 a = Board()
 b = Ship(Dot(0, 5), 3, 0)
@@ -170,5 +172,3 @@ print(a)
 a.shot(Dot(5, 5))
 print(a)
 print(a.count_destroy_ships)
-
-

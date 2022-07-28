@@ -109,7 +109,7 @@ class Board:
             for dx, dy in near:  # цикл по сдвигам в списке near
                 cur = Dot(d.x + dx, d.y + dy)  # получаем точки вокруг корабля
                 # self.game_field[cur.x][cur.y] = '+'
-                if not (self.out(cur)) and cur not in self.used_points:  # если в пределах поля и не в списке занятых точек
+                if not(self.out(cur)) and cur not in self.used_points:  # если в пределах поля и не в списке занятых точек
                     if game_status:
                         self.game_field[cur.x][cur.y] = '.'  # точка около корабля становится '.'
                     self.used_points.append(cur)
@@ -128,12 +128,12 @@ class Board:
         self.used_points.append(d)
 
         for ship in self.ships:
-            if d in ship.dots:
+            if ship.shooten(d):
                 ship.lives -= 1
                 self.game_field[d.x][d.y] = 'X'
                 if ship.lives == 0:
                     self.count_destroy_ships += 1
-                    self.contour(ship, verb=True)
+                    self.contour(ship, game_status=True)
                     print('Корабль убит')
                     return False
                 else:
