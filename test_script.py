@@ -65,6 +65,9 @@ class Board:
         self.count_destroy_ships = 0
 
         self.game_field = [['0']*size for _ in range(size)]
+        for i in self.game_field:
+            i[-1] = ' '
+        #self.game_field = [['0'] * size if (size <= 6) else [' '] for _ in range(size)]
 
         self.used_points = []
         self.ships = []
@@ -76,15 +79,13 @@ class Board:
         field_vision = ""
         field_vision += "  | 1 | 2 | 3 | 4 | 5 | 6 |"
         for i, row in enumerate(self.game_field[:-1]):
-            field_vision += f"\n{i + 1} | " + " | ".join(row) + " |"
+
+            field_vision += f"\n{i + 1} | " + " | ".join(row) #+ " |"
 
         if self.hide: #если hide == True, скрывает все корабли
             field_vision = field_vision.replace('■', 'O')
         return field_vision
 
-    """
-    Метод добавления кораблей на игровую доску
-    """
     def add_ship(self, ship):
         for d in ship.dots:
             if self.out(d) or d in self.used_points:
@@ -113,12 +114,13 @@ class Board:
                 #if not (self.out(cur)) and cur not in self.used_points:
                     if game_status:
                         #if cur in self.game_field:
-                        self.game_field[cur.x][cur.y] = '.'#точка около корабля становится '.'
+                        if cur.x < 6 and cur.y < 6:
+                            self.game_field[cur.x][cur.y] = '.'#точка около корабля становится '.'
                     self.used_points.append(cur)
 
     def out(self, away):
         """условие что точка выходит за пределы доски"""
-        return not((0 <= away.x < (self.size+1)) and (0 <= away.y < (self.size+1)))
+        return not((0 <= away.x < (self.size-1)) and (0 <= away.y < (self.size-1)))
 
     def shot(self, d):
         if self.out(d):

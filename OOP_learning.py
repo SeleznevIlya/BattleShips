@@ -26,17 +26,17 @@ class Ship:
         return shot in self.dots
 
 
-class BoardOutException:
+class BoardOutException(Exception):
     def __str__(self):
         print('Вы выбрали клетку за пределом поля!')
 
 
-class ShipPositionException:
+class ShipPositionException(Exception):
     def __str__(self):
         print('Некорректное положение корабля')
 
 
-class BoardUsedPointsException:
+class BoardUsedPointsException(Exception):
     def __str__(self):
         print('Невозможно выстрелить в эту точку')
 
