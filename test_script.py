@@ -1,14 +1,14 @@
-class BoardOutException:
+class BoardOutException(Exception):
     def __str__(self):
         print('Вы выбрали клетку за пределом поля!')
 
 
-class ShipPositionError():
+class ShipPositionError(Exception):
     def __str__(self):
         print('Некорректное положение корабля')
 
 
-class BoardUsedPointsException:
+class BoardUsedPointsException(Exception):
     def __str__(self):
         print('Невозможно выстрелить в эту точку')
 
@@ -150,6 +150,36 @@ class Board:
 
     def begin(self):
         self.used_points = []
+
+class Player:
+
+    def __init__(self, board, enemy_board):
+        self.board = board
+        self.enemy_board = enemy_board
+
+    def ask(self):
+        raise NotImplementedError()
+
+    def move(self):
+        while True:
+            try:
+                target = self.ask()
+                repeat = self.enemy_board.shot(target)
+                return repeat
+            except BoardUsedPointsException as e:
+                print(e)
+
+
+class AI(Player):
+
+    def ask(self):
+        ...
+
+
+class User(Player):
+
+    pass
+
 
 
 a = Board()

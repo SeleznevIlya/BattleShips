@@ -1,3 +1,5 @@
+from random import randint
+
 class Ship:
     def __init__(self, front_point, length_ship, rotation):
         self.front_point = front_point
@@ -150,27 +152,55 @@ class Board:
 
 class Player:
 
-    def __init__(self):
-        pass
+    def __init__(self, board, enemy_board):
+        self.board = board
+        self.enemy_board = enemy_board
 
     def ask(self):
-        pass
+        raise NotImplementedError()
 
     def move(self):
-        pass
+        while True:
+            try:
+                target = self.ask()
+                repeat = self.enemy_board.shot(target)
+                return repeat
+            except BoardUsedPointsException as e:
+                print(e)
 
 
 class AI(Player):
-
-    pass
+    def ask(self):
+        d = Dot(randint(0, 5), randint(0, 5))
+        print(f'Ход компьютера {d.x+1}, {d.y+1}')
+        return d
 
 
 class User(Player):
+    def ask(self):
+        while True:
+            turn = input('Ваш ход:').split()
+            if len(turn)!= 2:
+                print("Введите две координаты")
+                continue
 
-    pass
+            x, y = turn
+
+            if not(x.isdigit()) or not(y.isdigit()):
+                print('Введите числа')
+                continue
+
+            x, y = int(x), int(y)
+            return Dot(x-1, y-1)
 
 
 class Game:
+    def try_board(self):
+        lens = [3, 2, 2, 1, 1, 1, 1]
+        board = Board(size=self.size)
+        attempts = 0
+
+
 
     def random_board(self):
         pass
