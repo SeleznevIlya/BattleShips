@@ -1,5 +1,6 @@
 from random import randint
 
+
 class Ship:
     def __init__(self, front_point, length_ship, rotation):
         self.front_point = front_point
@@ -28,24 +29,26 @@ class Ship:
         return shot in self.dots
 
 
-class BoardOutException(Exception):
+class BoardException(Exception):
+    pass
+
+
+class BoardOutException(BoardException):
     def __str__(self):
-        print('Вы выбрали клетку за пределом поля!')
+        return "Вы пытаетесь выстрелить за доску!"
 
 
-class ShipPositionException(Exception):
+class BoardUsedException(BoardException):
     def __str__(self):
-        print('Некорректное положение корабля')
+        return "Вы уже стреляли в эту клетку"
 
 
-class BoardUsedPointsException(Exception):
-    def __str__(self):
-        print('Невозможно выстрелить в эту точку')
+class BoardWrongShipException(BoardException):
+    pass
 
 
 class Dot:
-
-    def __init__(self,x , y):
+    def __init__(self, x, y):
         self.x = x
         self.y = y
 
@@ -53,20 +56,20 @@ class Dot:
         return self.x == other.x and self.y == other.y
 
     def __repr__(self):
-        return f'Dor({self.x}, {self.y})'
+        return f"Dot({self.x}, {self.y})"
 
 
 class Board:
     """
     Класс для создания доски
     """
-    def __init__(self, size = 6, hide = False):
+    def __init__(self, hide=False, size=6):
         self.size = size
         self.hide = hide
 
         self.count_destroy_ships = 0
 
-        self.game_field = [['0']*size for _ in range(size)]
+        self.game_field = [["O"] * size for _ in range(size)]
 
         self.used_points = []
         self.ships = []
@@ -80,8 +83,8 @@ class Board:
         for i, row in enumerate(self.game_field):
             field_vision += f"\n{i + 1} | " + " | ".join(row) + " |"
 
-        if self.hide:
-            field_vision = field_vision.replace('■', 'O')
+        if self.hide: # если hide == True, скрывает все корабли
+            field_vision = field_vision.replace("■", "O")
         return field_vision
 
     def add_ship(self, ship):
@@ -90,9 +93,9 @@ class Board:
         '''
         for d in ship.dots:#проверяем точки корабля на соответствие условиям
             if self.out(d) or d in self.used_points:#если точка за полем или в списке использованых точек
-                raise ShipPositionException()#выбросит ошибку
+                raise BoardWrongShipException()#выбросит ошибку
         for d in ship.dots:#пробегаемся по точкам корабля
-            self.game_field[d.x][d.y] = '■'#и точку на поле с соответствующими координатами отрисовываем как часть корабля
+            self.game_field[d.x][d.y] = "■"#и точку на поле с соответствующими координатами отрисовываем как часть корабля
             self.used_points.append(d)#полученную точку отправляем в список использованных точек
 
         self.ships.append(ship)#добавляем корабль в список кораблей
@@ -103,47 +106,46 @@ class Board:
         Метод для вычисления и отрисовки контура корабля
         """
         near = [
-            (-1, -1), (1, 0), (-1, 1),
+            (-1, -1), (-1, 0), (-1, 1),
             (0, -1), (0, 0), (0, 1),
-            (1, -1), (-1, 0), (1, 1),
-        ]
-        for d in ship.dots:  # цикл по точкам корабля
-            for dx, dy in near:  # цикл по сдвигам в списке near
-                cur = Dot(d.x + dx, d.y + dy)  # получаем точки вокруг корабля
-                # self.game_field[cur.x][cur.y] = '+'
-                if not(self.out(cur)) and cur not in self.used_points:  # если в пределах поля и не в списке занятых точек
+            (1, -1), (1, 0), (1, 1)
+            ]
+        for d in ship.dots:# цикл по точкам корабля
+            for dx, dy in near:# цикл по сдвигам в списке near
+                cur = Dot(d.x + dx, d.y + dy)# получаем точки вокруг корабля
+                if not (self.out(cur)) and cur not in self.used_points:# если в пределах поля и не в списке занятых точек
                     if game_status:
-                        self.game_field[cur.x][cur.y] = '.'  # точка около корабля становится '.'
+                        self.game_field[cur.x][cur.y] = "."# точка около корабля становится '.'
                     self.used_points.append(cur)
 
     def out(self, away):
         """условие что точка выходит за пределы доски"""
-        return not((0 <= away.x <= self.size) and (0 <= away.y <= self.size))
+        return not ((0 <= away.x < self.size) and (0 <= away.y < self.size))
 
     def shot(self, d):
         if self.out(d):
             raise BoardOutException()
 
-        '''if d in self.used_points:
-            raise BoardUsedPointsException()'''
+        if d in self.used_points:
+            raise BoardUsedException()
 
         self.used_points.append(d)
 
         for ship in self.ships:
-            if ship.shooten(d):
+            if d in ship.dots:
                 ship.lives -= 1
-                self.game_field[d.x][d.y] = 'X'
+                self.game_field[d.x][d.y] = "X"
                 if ship.lives == 0:
                     self.count_destroy_ships += 1
                     self.contour(ship, game_status=True)
-                    print('Корабль убит')
+                    print("Корабль уничтожен!")
                     return False
                 else:
-                    print('Корабль ранен')
+                    print("Корабль ранен!")
                     return True
 
-        self.game_field[d.x][d.y] = '.'
-        print('Промахнулся')
+        self.game_field[d.x][d.y] = "."
+        print("Мимо!")
         return False
 
     def begin(self):
@@ -151,7 +153,6 @@ class Board:
 
 
 class Player:
-
     def __init__(self, board, enemy_board):
         self.board = board
         self.enemy_board = enemy_board
@@ -165,58 +166,119 @@ class Player:
                 target = self.ask()
                 repeat = self.enemy_board.shot(target)
                 return repeat
-            except BoardUsedPointsException as e:
+            except BoardException as e:
                 print(e)
 
 
 class AI(Player):
     def ask(self):
         d = Dot(randint(0, 5), randint(0, 5))
-        print(f'Ход компьютера {d.x+1}, {d.y+1}')
+        print(f"Ход компьютера: {d.x + 1} {d.y + 1}")
         return d
 
 
 class User(Player):
     def ask(self):
         while True:
-            turn = input('Ваш ход:').split()
-            if len(turn)!= 2:
-                print("Введите две координаты")
+            turn = input("Ваш ход: ").split()
+
+            if len(turn) != 2:
+                print(" Введите 2 координаты! ")
                 continue
 
             x, y = turn
 
-            if not(x.isdigit()) or not(y.isdigit()):
-                print('Введите числа')
+            if not (x.isdigit()) or not (y.isdigit()):
+                print(" Введите числа! ")
                 continue
 
             x, y = int(x), int(y)
-            return Dot(x-1, y-1)
+
+            return Dot(x - 1, y - 1)
 
 
 class Game:
+
+    def __init__(self, size=6):
+        self.size = size
+        player = self.random_board()
+        ai = self.random_board()
+        ai.hide = True
+
+        self.ai = AI(ai, player)
+        self.player = User(player, ai)
+
     def try_board(self):
-        lens = [3, 2, 2, 1, 1, 1, 1]
+        ship_lens = [3, 2, 2, 1, 1, 1, 1]
         board = Board(size=self.size)
         attempts = 0
-
-
+        for ship_len in ship_lens:
+            while True:
+                attempts += 1
+                if attempts > 2000:
+                    return None
+                ship = Ship(Dot(randint(0, self.size), randint(0, self.size)), ship_len, randint(0, 1))
+                try:
+                    board.add_ship(ship)
+                    break
+                except BoardWrongShipException:
+                    pass
+        board.begin()
+        return board
 
     def random_board(self):
-        pass
+        board = None
+        while board is None:
+            board = self.try_board()
+        return board
+
+
 
     def greet(self):
-        pass
+        print("-------------------")
+        print("  Приветсвуем вас  ")
+        print("      в игре       ")
+        print("    морской бой    ")
+        print("-------------------")
+        print(" формат ввода: x y ")
+        print(" x - номер строки  ")
+        print(" y - номер столбца ")
 
     def loop(self):
-        pass
+        num = 0
+        while True:
+            print("-" * 20)
+            print("Доска пользователя:")
+            print(self.player.board)
+            print("-" * 20)
+            print("Доска компьютера:")
+            print(self.ai.board)
+            print("-" * 20)
+            if num % 2 == 0:
+                print("Ходит пользователь!")
+                repeat = self.player.move()
+            else:
+                print("Ходит компьютер!")
+                repeat = self.ai.move()
+            if repeat:
+                num -= 1
+
+            if self.ai.board.count_destroy_ships == 7:
+                print("-" * 20)
+                print("Пользователь выиграл!")
+                break
+
+            if self.player.board.count_destroy_ships == 7:
+                print("-" * 20)
+                print("Компьютер выиграл!")
+                break
+            num += 1
 
     def start(self):
-        pass
+        self.greet()
+        self.loop()
 
-a = Board()
-b = Ship(Dot(1, 2), 3, 0)
 
-print(a.add_ship(b))
-print(a)
+start_game = Game()
+start_game.start()
 
